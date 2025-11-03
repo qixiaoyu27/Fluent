@@ -1,0 +1,85 @@
+# Python 全自动气动分析流程配置文件
+# 所有路径均以仓库根目录为基准，可以使用相对路径。
+paths:
+  model_output: result/model/nacelle.step
+  mesh_output: result/mesh/nacelle.su2
+  mesh_visualization: result/mesh/nacelle.vtk
+  cfd_workdir: result/cfd
+
+cad:
+  # 使用 cadquery 建模时的关键尺寸参数
+  length: 0.6           # 整流罩总长 (单位: 米)
+  inlet_radius: 0.08     # 进气口半径 (单位: 米)
+  outlet_radius: 0.04    # 尾部半径 (单位: 米)
+  wall_thickness: 0.003  # 壁厚 (单位: 米)
+  sampling_ports:
+    - position: 0.2      # 采样口中心距头部位置 (单位: 米)
+      radius: 0.01       # 采样口半径 (单位: 米)
+    - position: 0.4
+      radius: 0.012
+
+mesh:
+  # Gmsh 网格设置
+  characteristic_length_min: 0.005  # 最小特征长度 (单位: 米)
+  characteristic_length_max: 0.02   # 最大特征长度 (单位: 米)
+  algorithm: 6                      # 体网格算法 (Delaunay)
+  boundary_groups:
+    - name: INLET
+      dimension: 2
+      selection:
+        type: box
+        bounds: [-0.001, 0.001, -0.15, 0.15, 0.08, 0.12]
+    - name: OUTLET
+      dimension: 2
+      selection:
+        type: box
+        bounds: [0.59, 0.61, -0.1, 0.1, -0.06, -0.02]
+    - name: WALL
+      dimension: 2
+      selection:
+        type: complement
+        reference: [INLET, OUTLET]
+  fluid_volume:
+    name: FLUID
+    dimension: 3
+
+cfd:
+  su2_executable: D:/workspace/pycharm/Fluent/lib/SU2/SU2_CFD.exe
+  su2_config_output: result/cfd/nacelle.cfg
+  mesh_format: SU2
+  reference:
+    mach_number: 0.045          # 巡航速度约 15m/s，空气声速 335m/s 左右
+    aoa: 0.0
+    reynolds_number: 5.0e5
+    reference_length: 0.6
+  freestream:
+    temperature: 288.15
+    pressure: 101325
+    density: 1.225
+  solver_settings:
+    kind_turbulence_model: SA
+    cfl_number: 2.0
+    max_iterations: 200
+    convergence_threshold: 1.0e-6
+  boundary_conditions:
+    INLET:
+      marker_kind: INLET
+      total_temperature: 288.15
+      total_pressure: 101325
+    OUTLET:
+      marker_kind: OUTLET
+      static_pressure: 101000
+    WALL:
+      marker_kind: WALL
+      isothermal: 288.15
+
+post_processing:
+  history_file: result/cfd/history.csv
+  plot_output: result/cfd/convergence.png
+  plot_columns:
+    - category: Residuals
+      x: ITER
+      y: RMS_RES
+    - category: Aerodynamic
+      x: ITER
+      y: CL
