@@ -1,0 +1,52 @@
+# 全自动航模整流罩设计流程配置文件
+project:
+  name: "am_nacelle"
+  base_dir: "."
+
+model:
+  # 整流罩的外形尺寸（单位：米）
+  length: 0.45
+  max_radius: 0.075
+  wall_thickness: 0.003
+  # 是否导出 STL/STEP 模型
+  export_step: true
+  export_stl: true
+  output_step: "result/model/nacelle.step"
+  output_stl: "result/model/nacelle.stl"
+
+mesh:
+  # 几何模型输入路径，默认使用上一阶段生成的 STEP 文件
+  geometry_file: "result/model/nacelle.step"
+  gmsh_geo_script: "result/mesh/nacelle.geo"
+  output_msh: "result/mesh/nacelle.msh"
+  output_su2: "result/mesh/nacelle.su2"
+  global_mesh_size: 0.01
+  boundary_layer_thickness: 0.002
+  boundary_layer_layers: 4
+  growth_rate: 1.2
+
+cfd:
+  su2_executable: "D:/workspace/pycharm/Fluent/lib/SU2/SU2_CFD.exe"
+  config_output: "result/cfd/nacelle.cfg"
+  mesh_input: "result/mesh/nacelle.su2"
+  iteration_limit: 500
+  convergence_tolerance: 1e-5
+  turbulence_model: "SA"
+  history_output: "result/cfd/history.csv"
+  surface_output: "result/cfd/surface_flow.csv"
+
+flight_condition:
+  velocity: 15.0            # m/s
+  altitude: 50.0            # m
+  reference_length: 0.3     # m
+  reference_area: 0.025     # m^2
+  air_density: 1.225        # kg/m^3
+  dynamic_viscosity: 1.81e-5 # Pa·s
+  speed_of_sound: 340.0     # m/s
+  sideslip_angle: 0.0       # deg
+  angle_of_attack: 2.0      # deg
+
+postprocess:
+  report_json: "result/cfd/post_report.json"
+  plot_image: "result/cfd/convergence.png"
+  summary_txt: "result/cfd/summary.txt"
