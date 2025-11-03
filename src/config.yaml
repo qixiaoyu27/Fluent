@@ -1,0 +1,48 @@
+project:
+  name: water_research_nacelle
+  base_dir: ..
+  output_dirs:
+    model: result/model
+    mesh: result/mesh
+    cfd: result/cfd
+
+model:
+  fuselage_length: 1.2  # 单位：米
+  fuselage_radius: 0.09  # 单位：米
+  nose_length_ratio: 0.25  # 鼻锥长度占总长比例
+  wall_thickness: 0.003  # 壁厚（米）
+  fin_span: 0.12  # 尾翼半展长（米）
+  fin_chord: 0.16  # 尾翼根弦长（米）
+  fin_thickness: 0.004  # 尾翼厚度（米）
+  fin_sweep_ratio: 0.35  # 尾翼后掠比
+  export_format: step
+
+mesh:
+  gmsh_path: gmsh  # 若 gmsh 在 PATH 中，保持默认值
+  mesh_size_min: 0.005
+  mesh_size_max: 0.03
+  growth_rate: 1.2
+  surface_mesh_size: 0.01
+  boundary_layer_thickness: 0.004
+  boundary_layer_layers: 5
+  mesh_dimension: 3
+  geometry_file: result/model/nacelle.step
+  output_mesh: result/mesh/nacelle.msh
+
+cfd:
+  su2_exec: D:/workspace/pycharm/Fluent/lib/SU2/SU2_CFD.exe
+  su2_config_template: lib/su2_template.cfg
+  working_cfg: result/cfd/run.cfg
+  history_file: result/cfd/run_history.csv
+  restart_file: result/cfd/run_restart.dat
+  mach_number: 0.044  # 约等于 15m/s 在 20°C 空气条件下
+  angle_of_attack: 2.0
+  reynolds_number: 5.0e5
+  reference_length: 1.2
+  reference_area: 0.05
+
+postprocess:
+  history_summary: result/cfd/history_summary.json
+  plots:
+    lift_drag: result/cfd/lift_drag.png
+    residuals: result/cfd/residuals.png
