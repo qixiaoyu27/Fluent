@@ -1,0 +1,80 @@
+paths:
+  result_root: ../result
+  model_output: ../result/model
+  mesh_output: ../result/mesh
+  cfd_output: ../result/cfd
+
+model:
+  step_filename: nacelle.step
+  stl_filename: nacelle.stl
+  profile:
+    length: 0.45                # 机身轴向长度 (m)
+    inlet_radius: 0.065         # 进气口半径 (m)
+    body_radius: 0.055          # 主体最大半径 (m)
+    tail_radius: 0.03           # 尾部半径 (m)
+    wall_thickness: 0.0025      # 壁厚 (m)
+    inlet_lip_length: 0.05      # 进气口外翻长度 (m)
+    tail_cone_length: 0.12      # 尾椎渐缩长度 (m)
+  meshing:
+    circle_segments: 120        # 旋转体离散段数，决定曲面光滑度
+
+mesh:
+  geometry_filename: nacelle.step
+  mesh_filename: nacelle.su2
+  gmsh:
+    min_size: 0.003             # 网格最小尺度 (m)
+    max_size: 0.008             # 网格最大尺度 (m)
+    mesh_order: 1               # 网格阶数
+    algorithm: 5                # 体网格算法 (例如 Delaunay)
+    recombine: false            # 是否重构为四边形/六面体
+    farfield_scale: 8.0         # 远场边界相对机身长度的比例
+    boundary_tags:
+      wall: FUSELAGE            # 模型表面物理名称
+      farfield: FARFIELD        # 远场物理名称
+
+cfd:
+  su2_executable: "D:/workspace/pycharm/Fluent/lib/SU2/SU2_CFD.exe"
+  config_filename: nacelle.cfg
+  mesh_filename: nacelle.su2
+  fluid:
+    gamma: 1.4
+    gas_constant: 287.05        # J/(kg·K)
+    temperature: 288.15         # K
+    pressure: 101325.0          # Pa
+    density: 1.225              # kg/m^3
+    viscosity: 1.81e-5          # kg/(m·s)
+  flight_condition:
+    velocity: 15.0              # m/s
+    aoa: 0.0                    # 迎角 (°)
+    sideslip: 0.0               # 侧滑角 (°)
+  numerics:
+    solver: RANS
+    turbulence_model: SA        # Spalart-Allmaras
+    max_iterations: 500
+    cfl: 5.0
+    cfl_adapt: true
+    cfl_adapt_param: [0.5, 5.0, 1.1]
+    linear_solver: FGMRES
+    linear_solver_prec: ILU
+  markers:
+    wall: FUSELAGE
+    farfield: FARFIELD
+    symmetry: []
+    monitoring: FUSELAGE
+  output:
+    history: history.csv
+    surface: surface_flow.dat
+    volume: flow.vtu
+    restart: restart_flow.dat
+    forces_breakdown: forces_breakdown.dat
+
+postprocessing:
+  history_file: history.csv
+  forces_file: forces_breakdown.dat
+  plots:
+    coefficient_history: cl_cd_history.png
+    convergence: residual_history.png
+
+execution:
+  run_solver: false             # 开发环境默认不自动调用 SU2，可在实际环境置为 true
+  run_post: false               # 若需要自动后处理，请与 run_solver 联动设置
