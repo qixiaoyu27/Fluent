@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+result/*.csv
+result/*.png
+result/*.cfg
+result/*.log
+result/*.json
+result/*.txt
+result/*.stl
+result/*.step
